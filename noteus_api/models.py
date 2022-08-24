@@ -1,5 +1,9 @@
 from django.db import models
+from django.db.models import Model
 
-# Create your models here.
-class Note(models.Model):
-    text_content = models.TextField
+class Note(Model):
+    # this is not working
+    text_content = models.TextField()
+
+    def __str__(self):
+        return self.text_content

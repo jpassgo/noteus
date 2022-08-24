@@ -1,21 +1,24 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views import View
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import permissions
+from rest_framework import status
+from .serializers import NoteSerializer
 from .models import Note
-import json
 
-@method_decorator(csrf_exempt, name='dispatch')
-class Notes(View):
+# @method_decorator(csrf_exempt, name='dispatch')
+class Notes(APIView):
 
-    def post(self, request):
-        data = json.loads(request.body.decode("utf-8"))
-        text_content = data.get('text_content')
+    # permission_classes = [permissions.IsAuthenticated]
 
-        note = Note.objects.create(text_content)
+    def post(self, request, *args, **kwargs):
+        data = {'text_content': request.data.get('text_content'),}
+        
+        serializer = NoteSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            print(serializer.data)
+            return Response(data, status=status.HTTP_201_CREATED)
 
-        data = {
-            "message": f"New note added with id: {note.id}"
-        }
-        return JsonResponse(data, status=201)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
